@@ -6,8 +6,9 @@
  * Shows how to integrate BackgroundTask and BackgroundTaskWidget
  * inside a symfony/tui application.
  *
- * RendererInterface is implemented inline using an anonymous class
- * wrapping $tui->requestRender().
+ * TuiBackgroundTaskManager wraps BackgroundTaskManager and exposes
+ * a RendererInterface so BackgroundTaskWidget can request redraws
+ * without knowing about the Tui instance.
  */
 
 require __DIR__.'/../../vendor/autoload.php';
@@ -18,12 +19,12 @@ use Symfony\Component\Tui\Style\Direction;
 use Symfony\Component\Tui\Style\Style;
 use Symfony\Component\Tui\Tui;
 use Symfony\Component\Tui\Widget\ContainerWidget;
-use TuiBackground\BackgroundTask;
+use TuiBackground\BackgroundTaskManager;
 use TuiBackground\BackgroundTaskWidget;
 use TuiBackground\Event\BackgroundTaskCompletedEvent;
 use TuiBackground\Event\BackgroundTaskFailedEvent;
 use TuiBackground\Event\BackgroundTaskProgressEvent;
-use TuiBackground\RendererInterface;
+use TuiBackground\TuiBackgroundTaskManager;
 
 // --- TUI setup ---
 
@@ -32,42 +33,31 @@ $root->setStyle(new Style(direction: Direction::Vertical));
 
 $tui = new Tui();
 $tui->add($root);
-/** @var BackgroundTask|null $process */
-$process = null;
 
-$tui->addListener(static function (InputEvent $event) use ($tui, &$process): void {
-    if ("\x03" === $event->getData() || "\r" === $event->getData()) {
-        $process?->kill();
-        $tui->stop();
-    }
-});
+// --- Manager ---
 
-// Wrap Tui in RendererInterface so BackgroundTaskWidget can request redraws.
-$renderer = new class($tui) implements RendererInterface {
-    public function __construct(private readonly Tui $tui)
-    {
-    }
-
-    public function requestPageRender(): void
-    {
-        $this->tui->requestRender();
-    }
-};
+$manager = new TuiBackgroundTaskManager(
+    new BackgroundTaskManager(new EventDispatcher()),
+    $tui,
+);
 
 // --- Widget ---
 
-$taskWidget = new BackgroundTaskWidget($renderer, 'Running task', [
+$taskWidget = new BackgroundTaskWidget($manager->getRenderer(), 'Running task', [
     ['key' => 'init', 'label' => 'Initializing'],
     ['key' => 'process', 'label' => 'Processing'],
     ['key' => 'finalize', 'label' => 'Finalizing'],
 ]);
 $root->add($taskWidget->getWidget());
 
+// --- Start task ---
+
+$taskId = $manager->start('Running task', [PHP_BINARY, __DIR__.'/worker.php'], []);
+$taskWidget->setStepRunning('init');
+
 // --- Event wiring ---
 
-$dispatcher = new EventDispatcher();
-
-$dispatcher->addListener(BackgroundTaskProgressEvent::class, function (BackgroundTaskProgressEvent $e) use ($taskWidget): void {
+$manager->onTaskProgress($taskId, function (BackgroundTaskProgressEvent $e) use ($taskWidget): void {
     $type = is_string($e->data['type'] ?? null) ? $e->data['type'] : '';
 
     if ('initialized' === $type) {
@@ -83,23 +73,22 @@ $dispatcher->addListener(BackgroundTaskProgressEvent::class, function (Backgroun
     }
 });
 
-$dispatcher->addListener(BackgroundTaskCompletedEvent::class, function (BackgroundTaskCompletedEvent $e) use ($taskWidget): void {
+$manager->onTaskCompleted($taskId, function (BackgroundTaskCompletedEvent $e) use ($taskWidget): void {
     $taskWidget->setStepDone('finalize', 'Finalized');
     $taskWidget->setComplete('', 'All done! Press Ctrl+C or Enter to exit.');
 });
 
-$dispatcher->addListener(BackgroundTaskFailedEvent::class, function (BackgroundTaskFailedEvent $e) use ($taskWidget): void {
+$manager->onTaskFailed($taskId, function (BackgroundTaskFailedEvent $e) use ($taskWidget): void {
     $taskWidget->setFailed($e->message);
 });
 
-// --- Start ---
+// --- Input: Ctrl+C or Enter stops the TUI ---
 
-$process = new BackgroundTask(
-    command: [PHP_BINARY, __DIR__.'/worker.php'],
-    dispatcher: $dispatcher,
-);
-
-$process->start([]);
-$taskWidget->setStepRunning('init');
+$tui->addListener(static function (InputEvent $event) use ($tui, $manager, $taskId): void {
+    if ("\x03" === $event->getData() || "\r" === $event->getData()) {
+        $manager->stop($taskId);
+        $tui->stop();
+    }
+});
 
 $tui->run();
