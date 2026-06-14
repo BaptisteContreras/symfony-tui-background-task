@@ -1,0 +1,25 @@
+{
+    "name": "bapt/symfony-tui-background-task",
+    "description": "Background task runner with progress events and TUI widget for PHP CLI applications",
+    "type": "library",
+    "license": "MIT",
+    "require": {
+        "php": "^8.4",
+        "revolt/event-loop": "^1.0",
+        "symfony/event-dispatcher": "^7.0 || ^8.0",
+        "symfony/tui": "^8.0"
+    },
+    "require-dev": {
+        "friendsofphp/php-cs-fixer": "^3.0",
+        "phpstan/phpstan": "^2.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "TuiBackground\\": "src/"
+        }
+    },
+    "config": {
+        "optimize-autoloader": true,
+        "sort-packages": true
+    }
+}
