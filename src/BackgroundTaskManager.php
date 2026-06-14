@@ -10,7 +10,7 @@ use TuiBackground\Event\BackgroundTaskCompletedEvent;
 use TuiBackground\Event\BackgroundTaskFailedEvent;
 use TuiBackground\Event\BackgroundTaskProgressEvent;
 
-final class BackgroundTaskManager
+final class BackgroundTaskManager implements BackgroundTaskManagerInterface
 {
     /** @var array<string, array{id: TaskId, label: string, process: BackgroundTask, dispatcher: EventDispatcher}> */
     private array $entries = [];
@@ -72,17 +72,17 @@ final class BackgroundTaskManager
         $this->dispatcher->dispatch(new BackgroundProcessStoppedEvent($id, $entry['label']));
     }
 
-    public function onProcessProgress(TaskId $id, callable $listener): void
+    public function onTaskProgress(TaskId $id, callable $listener): void
     {
         $this->addListener($id, BackgroundTaskProgressEvent::class, $listener);
     }
 
-    public function onProcessCompleted(TaskId $id, callable $listener): void
+    public function onTaskCompleted(TaskId $id, callable $listener): void
     {
         $this->addListener($id, BackgroundTaskCompletedEvent::class, $listener);
     }
 
-    public function onProcessFailed(TaskId $id, callable $listener): void
+    public function onTaskFailed(TaskId $id, callable $listener): void
     {
         $this->addListener($id, BackgroundTaskFailedEvent::class, $listener);
     }

@@ -32,6 +32,9 @@ $root->setStyle(new Style(direction: Direction::Vertical));
 
 $tui = new Tui();
 $tui->add($root);
+/** @var BackgroundTask|null $process */
+$process = null;
+
 $tui->addListener(static function (InputEvent $event) use ($tui, &$process): void {
     if ("\x03" === $event->getData() || "\r" === $event->getData()) {
         $process?->kill();
