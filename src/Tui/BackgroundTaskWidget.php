@@ -1,6 +1,6 @@
 <?php
 
-namespace TuiBackground;
+namespace TuiBackground\Tui;
 
 use Revolt\EventLoop;
 use Symfony\Component\Tui\Style\Direction;

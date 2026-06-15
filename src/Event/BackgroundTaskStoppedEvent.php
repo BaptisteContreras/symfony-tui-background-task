@@ -4,7 +4,7 @@ namespace TuiBackground\Event;
 
 use TuiBackground\TaskId;
 
-final class BackgroundProcessStoppedEvent
+final class BackgroundTaskStoppedEvent
 {
     public function __construct(
         public readonly TaskId $id,

@@ -1,6 +1,6 @@
 <?php
 
-namespace TuiBackground;
+namespace TuiBackground\Tui;
 
 use Symfony\Component\Tui\Tui;
 

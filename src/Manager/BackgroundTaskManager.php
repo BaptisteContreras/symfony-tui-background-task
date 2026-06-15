@@ -1,14 +1,16 @@
 <?php
 
-namespace TuiBackground;
+namespace TuiBackground\Manager;
 
 use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
-use TuiBackground\Event\BackgroundProcessStartedEvent;
-use TuiBackground\Event\BackgroundProcessStoppedEvent;
+use TuiBackground\BackgroundTask;
+use TuiBackground\Event\BackgroundTaskStartedEvent;
+use TuiBackground\Event\BackgroundTaskStoppedEvent;
 use TuiBackground\Event\BackgroundTaskCompletedEvent;
 use TuiBackground\Event\BackgroundTaskFailedEvent;
 use TuiBackground\Event\BackgroundTaskProgressEvent;
+use TuiBackground\TaskId;
 
 final class BackgroundTaskManager implements BackgroundTaskManagerInterface
 {
@@ -50,11 +52,11 @@ final class BackgroundTaskManager implements BackgroundTaskManagerInterface
                     return;
                 }
                 $this->stopped[$id->value] = true;
-                $this->dispatcher->dispatch(new BackgroundProcessStoppedEvent($id, $label));
+                $this->dispatcher->dispatch(new BackgroundTaskStoppedEvent($id, $label));
             });
         }
 
-        $this->dispatcher->dispatch(new BackgroundProcessStartedEvent($id, $label));
+        $this->dispatcher->dispatch(new BackgroundTaskStartedEvent($id, $label));
         $process->start($payload);
 
         return $id;
@@ -69,7 +71,7 @@ final class BackgroundTaskManager implements BackgroundTaskManagerInterface
 
         $this->stopped[$id->value] = true;
         $entry['process']->kill();
-        $this->dispatcher->dispatch(new BackgroundProcessStoppedEvent($id, $entry['label']));
+        $this->dispatcher->dispatch(new BackgroundTaskStoppedEvent($id, $entry['label']));
     }
 
     public function onTaskProgress(TaskId $id, callable $listener): void

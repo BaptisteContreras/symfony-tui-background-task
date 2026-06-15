@@ -19,12 +19,12 @@ use Symfony\Component\Tui\Style\Direction;
 use Symfony\Component\Tui\Style\Style;
 use Symfony\Component\Tui\Tui;
 use Symfony\Component\Tui\Widget\ContainerWidget;
-use TuiBackground\BackgroundTaskManager;
-use TuiBackground\BackgroundTaskWidget;
 use TuiBackground\Event\BackgroundTaskCompletedEvent;
 use TuiBackground\Event\BackgroundTaskFailedEvent;
 use TuiBackground\Event\BackgroundTaskProgressEvent;
-use TuiBackground\TuiBackgroundTaskManager;
+use TuiBackground\Manager\BackgroundTaskManager;
+use TuiBackground\Manager\TuiBackgroundTaskManager;
+use TuiBackground\Tui\BackgroundTaskWidget;
 
 // --- TUI setup ---
 

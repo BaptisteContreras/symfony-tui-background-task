@@ -93,18 +93,15 @@ EventLoop::run();
 Manages multiple concurrent background tasks with a shared event dispatcher:
 
 ```php
-use Symfony\Component\EventDispatcher\EventDispatcher;
-use TuiBackground\BackgroundTaskManager;
-use TuiBackground\Event\BackgroundProcessStartedEvent;
-use TuiBackground\Event\BackgroundProcessStoppedEvent;
+use Symfony\Component\EventDispatcher\EventDispatcher;use TuiBackground\Event\BackgroundTaskStartedEvent;use TuiBackground\Event\BackgroundTaskStoppedEvent;use TuiBackground\Manager\BackgroundTaskManager;
 
 $globalDispatcher = new EventDispatcher();
 
 // Track lifecycle on the global dispatcher
-$globalDispatcher->addListener(BackgroundProcessStartedEvent::class, function (BackgroundProcessStartedEvent $e): void {
+$globalDispatcher->addListener(BackgroundTaskStartedEvent::class, function (BackgroundTaskStartedEvent $e): void {
     printf("Started: %s (%s)\n", $e->label, $e->id);
 });
-$globalDispatcher->addListener(BackgroundProcessStoppedEvent::class, function (BackgroundProcessStoppedEvent $e): void {
+$globalDispatcher->addListener(BackgroundTaskStoppedEvent::class, function (BackgroundTaskStoppedEvent $e): void {
     printf("Stopped: %s (%s)\n", $e->label, $e->id);
 });
 
@@ -134,7 +131,7 @@ Displays a step list with a spinner inside a `symfony/tui` application.
 Implement `RendererInterface` to bridge the widget to your TUI's render cycle:
 
 ```php
-use TuiBackground\RendererInterface;
+use TuiBackground\Tui\RendererInterface;
 
 $renderer = new class($tui) implements RendererInterface {
     public function __construct(private readonly Tui $tui) {}
@@ -145,7 +142,7 @@ $renderer = new class($tui) implements RendererInterface {
 Then create the widget:
 
 ```php
-use TuiBackground\BackgroundTaskWidget;
+use TuiBackground\Tui\BackgroundTaskWidget;
 
 $taskWidget = new BackgroundTaskWidget($renderer, 'Exporting data', [
     ['key' => 'fetch',  'label' => 'Fetching records'],

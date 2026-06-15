@@ -1,8 +1,11 @@
 <?php
 
-namespace TuiBackground;
+namespace TuiBackground\Manager;
 
 use Symfony\Component\Tui\Tui;
+use TuiBackground\TaskId;
+use TuiBackground\Tui\RendererInterface;
+use TuiBackground\Tui\TuiRenderer;
 
 final class TuiBackgroundTaskManager implements BackgroundTaskManagerInterface
 {

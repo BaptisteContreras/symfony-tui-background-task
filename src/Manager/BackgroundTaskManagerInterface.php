@@ -1,6 +1,8 @@
 <?php
 
-namespace TuiBackground;
+namespace TuiBackground\Manager;
+
+use TuiBackground\TaskId;
 
 interface BackgroundTaskManagerInterface
 {
