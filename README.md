@@ -142,7 +142,7 @@ $renderer = new class($tui) implements RendererInterface {
 Then create the widget:
 
 ```php
-use TuiBackground\Tui\BackgroundTaskWidget;
+use TuiBackground\Widget\BackgroundTaskWidget;
 
 $taskWidget = new BackgroundTaskWidget($renderer, 'Exporting data', [
     ['key' => 'fetch',  'label' => 'Fetching records'],

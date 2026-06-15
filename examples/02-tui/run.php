@@ -24,7 +24,7 @@ use TuiBackground\Event\BackgroundTaskFailedEvent;
 use TuiBackground\Event\BackgroundTaskProgressEvent;
 use TuiBackground\Manager\BackgroundTaskManager;
 use TuiBackground\Manager\TuiBackgroundTaskManager;
-use TuiBackground\Tui\BackgroundTaskWidget;
+use TuiBackground\Widget\BackgroundTaskWidget;
 
 // --- TUI setup ---
 

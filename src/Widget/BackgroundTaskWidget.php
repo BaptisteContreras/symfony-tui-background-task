@@ -1,12 +1,13 @@
 <?php
 
-namespace TuiBackground\Tui;
+namespace TuiBackground\Widget;
 
 use Revolt\EventLoop;
 use Symfony\Component\Tui\Style\Direction;
 use Symfony\Component\Tui\Style\Style;
 use Symfony\Component\Tui\Widget\ContainerWidget;
 use Symfony\Component\Tui\Widget\TextWidget;
+use TuiBackground\Tui\RendererInterface;
 
 final class BackgroundTaskWidget
 {

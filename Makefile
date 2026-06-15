@@ -1,7 +1,7 @@
 IMAGE   := tui-background-dev
 DOCKER_RUN := docker run --rm -v $(CURDIR):/app $(IMAGE)
 
-.PHONY: build install cs stan check example-01 example-02
+.PHONY: build install cs stan check example-01 example-02 example-03
 
 ## Build the dev Docker image
 build:
@@ -29,3 +29,7 @@ example-01:
 ## Run example 02: TUI with BackgroundTaskWidget (requires a real terminal)
 example-02:
 	docker run -it --rm -v $(CURDIR):/app $(IMAGE) examples/02-tui/run.php
+
+## Run example 03: Symfony Console integration (requires a real terminal)
+example-03:
+	docker run -it --rm -v $(CURDIR):/app $(IMAGE) examples/03-console/console.php run
