@@ -46,6 +46,8 @@ Any JSON line with `type=done` dispatches `BackgroundTaskCompletedEvent`.
 Any JSON line with `type=error` dispatches `BackgroundTaskFailedEvent`.
 All other lines dispatch `BackgroundTaskProgressEvent` with the raw data.
 
+For a full description of the communication protocol, see [docs/PROTOCOL.md](docs/PROTOCOL.md).
+
 ## Usage
 
 ### BackgroundProcess

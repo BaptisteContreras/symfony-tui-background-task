@@ -9,6 +9,12 @@ use Symfony\Component\Console\Output\OutputInterface;
 abstract class AbstractWorkerCommand extends Command
 {
     private ?string $failureMessage = null;
+    private ?WorkerSocket $socket = null;
+
+    public function __construct(private readonly WorkerSocketFactoryInterface $socketFactory)
+    {
+        parent::__construct();
+    }
 
     protected function configure(): void
     {
@@ -17,7 +23,10 @@ abstract class AbstractWorkerCommand extends Command
 
     final protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $payload = $this->readPayload();
+        $socket = $this->socketFactory->create();
+        $this->socket = $socket;
+
+        $payload = $socket->readPayload();
 
         try {
             $this->handle($payload);
@@ -25,11 +34,8 @@ abstract class AbstractWorkerCommand extends Command
             $this->failureMessage ??= $e->getMessage();
         }
 
-        if (null !== $this->failureMessage) {
-            $this->writeEvent(['type' => 'error', 'message' => $this->failureMessage]);
-        }
-
-        $this->writeEvent(['type' => 'done']);
+        $socket->terminate($this->failureMessage);
+        $this->socket = null;
 
         return Command::SUCCESS;
     }
@@ -44,40 +50,11 @@ abstract class AbstractWorkerCommand extends Command
      */
     protected function emit(array $event): void
     {
-        $this->writeEvent($event);
+        $this->socket?->emit($event);
     }
 
     protected function fail(string $message): void
     {
         $this->failureMessage = $message;
-    }
-
-    /**
-     * @return array<string, mixed>
-     */
-    private function readPayload(): array
-    {
-        $raw = (string) stream_get_contents(STDIN);
-
-        if ('' === $raw) {
-            return [];
-        }
-
-        try {
-            $decoded = json_decode($raw, true, flags: \JSON_THROW_ON_ERROR);
-        } catch (\JsonException) {
-            return [];
-        }
-
-        return is_array($decoded) ? $decoded : [];
-    }
-
-    /**
-     * @param array<string, mixed> $event
-     */
-    private function writeEvent(array $event): void
-    {
-        fwrite(STDOUT, json_encode($event)."\n");
-        fflush(STDOUT);
     }
 }

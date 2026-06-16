@@ -65,11 +65,14 @@ final class BackgroundTask
                     continue;
                 }
                 $event = json_decode($line, true);
-                if (is_array($event)) {
-                    /** @var array<string, mixed> $event */
-                    if ($this->dispatchProgressOrTerminal($event)) {
-                        return;
-                    }
+                if (!is_array($event)) {
+                    $this->terminate(new BackgroundTaskFailedEvent(sprintf('Worker sent malformed JSON: %s', $line)));
+
+                    return;
+                }
+                /** @var array<string, mixed> $event */
+                if ($this->dispatchProgressOrTerminal($event)) {
+                    return;
                 }
             }
 

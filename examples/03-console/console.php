@@ -16,8 +16,9 @@ require __DIR__.'/RunCommand.php';
 require __DIR__.'/WorkerCommand.php';
 
 use Symfony\Component\Console\Application;
+use TuiBackground\Worker\StdioWorkerSocketFactory;
 
 $app = new Application('tui-background-example', '1.0.0');
 $app->addCommand(new RunCommand());
-$app->addCommand(new WorkerCommand());
+$app->addCommand(new WorkerCommand(new StdioWorkerSocketFactory()));
 $app->run();
