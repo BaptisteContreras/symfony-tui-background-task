@@ -7,6 +7,8 @@ use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 use TuiBackground\Event\BackgroundTaskCompletedEvent;
 use TuiBackground\Event\BackgroundTaskFailedEvent;
 use TuiBackground\Event\BackgroundTaskProgressEvent;
+use TuiBackground\Exception\BackgroundTaskAlreadyStartedException;
+use TuiBackground\Exception\InvalidPayloadException;
 
 final class BackgroundTask
 {
@@ -31,16 +33,14 @@ final class BackgroundTask
     public function start(array $payload): void
     {
         if ($this->started) {
-            throw new \LogicException('BackgroundTask already started. Create a new instance to run another task.');
+            throw new BackgroundTaskAlreadyStartedException();
         }
         $this->started = true;
 
         try {
             $encoded = json_encode($payload, \JSON_THROW_ON_ERROR);
         } catch (\JsonException $e) {
-            $this->dispatcher->dispatch(new BackgroundTaskFailedEvent('Failed to encode payload: '.$e->getMessage()));
-
-            return;
+            throw new InvalidPayloadException($e);
         }
 
         try {

@@ -5,11 +5,11 @@ namespace TuiBackground\Manager;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 use TuiBackground\BackgroundTask;
-use TuiBackground\Event\BackgroundTaskStartedEvent;
-use TuiBackground\Event\BackgroundTaskStoppedEvent;
 use TuiBackground\Event\BackgroundTaskCompletedEvent;
 use TuiBackground\Event\BackgroundTaskFailedEvent;
 use TuiBackground\Event\BackgroundTaskProgressEvent;
+use TuiBackground\Event\BackgroundTaskStartedEvent;
+use TuiBackground\Event\BackgroundTaskStoppedEvent;
 use TuiBackground\TaskId;
 
 final class BackgroundTaskManager implements BackgroundTaskManagerInterface
