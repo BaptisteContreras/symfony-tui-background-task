@@ -5,11 +5,13 @@ namespace TuiBackground\Worker;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use TuiBackground\EventType;
+use TuiBackground\Exception\LogicException;
 
 abstract class AbstractWorkerCommand extends Command
 {
-    private ?string $failureMessage = null;
-    private ?WorkerSocket $socket = null;
+    private bool $terminated = false;
+    private ?WorkerTask $task = null;
 
     public function __construct(private readonly WorkerSocketFactoryInterface $socketFactory)
     {
@@ -18,24 +20,28 @@ abstract class AbstractWorkerCommand extends Command
 
     protected function configure(): void
     {
-        $this->setHidden(true);
+        $this->setHidden();
     }
 
     final protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $socket = $this->socketFactory->create();
-        $this->socket = $socket;
+        $task = new WorkerTask($this->socketFactory->create());
+        $this->task = $task;
 
-        $payload = $socket->readPayload();
+        $payload = $task->readPayload();
 
         try {
             $this->handle($payload);
         } catch (\Throwable $e) {
-            $this->failureMessage ??= $e->getMessage();
+            $this->fail($e->getMessage());
         }
 
-        $socket->terminate($this->failureMessage);
-        $this->socket = null;
+        if (!$this->terminated) {
+            $this->done();
+        }
+
+        $this->task = null;
+        $this->terminated = false;
 
         return Command::SUCCESS;
     }
@@ -46,15 +52,54 @@ abstract class AbstractWorkerCommand extends Command
     abstract protected function handle(array $payload): void;
 
     /**
-     * @param array<string, mixed> $event
+     * @param array<string, mixed> $data
      */
-    protected function emit(array $event): void
+    protected function progress(string $subType, ?string $message = null, array $data = []): void
     {
-        $this->socket?->emit($event);
+        if ($this->terminated) {
+            throw new LogicException('Cannot emit progress after the task has been terminated.');
+        }
+
+        $event = ['type' => EventType::Progress->value, 'sub_type' => $subType];
+
+        if (null !== $message) {
+            $event['message'] = $message;
+        }
+
+        if ([] !== $data) {
+            $event['data'] = $data;
+        }
+
+        $this->task?->emit($event);
     }
 
-    protected function fail(string $message): void
+    /**
+     * @param array<string, mixed> $data
+     */
+    protected function done(?string $message = null, array $data = []): bool
     {
-        $this->failureMessage = $message;
+        if ($this->terminated) {
+            return false;
+        }
+
+        $this->task?->complete($message, $data);
+        $this->terminated = true;
+
+        return true;
+    }
+
+    /**
+     * @param array<string, mixed> $data
+     */
+    protected function fail(?string $message = null, array $data = []): bool
+    {
+        if ($this->terminated) {
+            return false;
+        }
+
+        $this->task?->fail($message, $data);
+        $this->terminated = true;
+
+        return true;
     }
 }

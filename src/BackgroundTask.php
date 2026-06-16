@@ -114,15 +114,15 @@ final class BackgroundTask
     private function dispatchProgressOrTerminal(array $event): bool
     {
         $typeValue = $event['type'] ?? null;
-        $type = is_string($typeValue) ? $typeValue : '';
+        $type = is_string($typeValue) ? EventType::tryFrom($typeValue) : null;
 
-        if ('done' === $type) {
+        if (EventType::Done === $type) {
             $this->terminate(new BackgroundTaskCompletedEvent());
 
             return true;
         }
 
-        if ('error' === $type) {
+        if (EventType::Error === $type) {
             $messageValue = $event['message'] ?? null;
             $message = is_string($messageValue) ? $messageValue : 'Unknown error';
             $this->terminate(new BackgroundTaskFailedEvent($message));

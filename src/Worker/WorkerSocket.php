@@ -14,49 +14,14 @@ final class WorkerSocket
     ) {
     }
 
-    /**
-     * @return array<string, mixed>
-     */
-    public function readPayload(): array
+    public function read(): string
     {
-        $raw = (string) stream_get_contents($this->input);
-
-        if ('' === $raw) {
-            return [];
-        }
-
-        try {
-            $decoded = json_decode($raw, true, flags: \JSON_THROW_ON_ERROR);
-        } catch (\JsonException) {
-            return [];
-        }
-
-        return is_array($decoded) ? $decoded : [];
+        return (string) stream_get_contents($this->input);
     }
 
-    /**
-     * @param array<string, mixed> $event
-     */
-    public function emit(array $event): void
+    public function writeLine(string $line): void
     {
-        $this->write($event);
-    }
-
-    public function terminate(?string $error = null): void
-    {
-        if (null !== $error) {
-            $this->write(['type' => 'error', 'message' => $error]);
-        } else {
-            $this->write(['type' => 'done']);
-        }
-    }
-
-    /**
-     * @param array<string, mixed> $event
-     */
-    private function write(array $event): void
-    {
-        fwrite($this->output, json_encode($event)."\n");
+        fwrite($this->output, $line."\n");
         fflush($this->output);
     }
 }

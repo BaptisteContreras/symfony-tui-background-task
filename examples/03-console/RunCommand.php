@@ -44,16 +44,17 @@ final class RunCommand extends Command
         $taskWidget->setStepRunning('init');
 
         $manager->onTaskProgress($taskId, function (BackgroundTaskProgressEvent $e) use ($taskWidget): void {
-            $type = is_string($e->data['type'] ?? null) ? $e->data['type'] : '';
+            $subType = is_string($e->data['sub_type'] ?? null) ? $e->data['sub_type'] : '';
+            $data = is_array($e->data['data'] ?? null) ? $e->data['data'] : [];
 
-            if ('initialized' === $type) {
+            if ('initialized' === $subType) {
                 $taskWidget->setStepDone('init', 'Initialized');
                 $taskWidget->setStepRunning('process');
-            } elseif ('processing' === $type) {
-                $step = is_int($e->data['step'] ?? null) ? $e->data['step'] : 0;
-                $total = is_int($e->data['total'] ?? null) ? $e->data['total'] : 0;
+            } elseif ('processing' === $subType) {
+                $step = is_int($data['step'] ?? null) ? $data['step'] : 0;
+                $total = is_int($data['total'] ?? null) ? $data['total'] : 0;
                 $taskWidget->setStepRunning('process', sprintf('Processing (%d/%d)', $step, $total));
-            } elseif ('finalized' === $type) {
+            } elseif ('finalized' === $subType) {
                 $taskWidget->setStepDone('process', 'Processed');
                 $taskWidget->setStepRunning('finalize');
             }

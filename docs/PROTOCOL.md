@@ -87,15 +87,21 @@ Keep payloads light. The protocol does not handle object serialization — prefe
 
 The Worker communicates with the Background Task by writing events to `stdout` as **newline-delimited JSON** — one JSON object per line, each terminated with `\n`.
 
-Each event must be a JSON object with at least a `type` field (string, required). The `type` field determines how the Background Task interprets the event. The following values are defined:
+Each event must be a JSON object with a `type` field (string, required). The `type` field determines how the Background Task interprets the event. The following values are defined:
 
 | `type` | Meaning |
 |---|---|
+| `progress` | A progress notification. **See Progress events below.** |
 | `done` | The Worker completed successfully. **Reserved — see Terminal events.** |
 | `error` | The Worker encountered a fatal error. **Reserved — see Terminal events.** |
-| *(any other string)* | A progress notification. Forwarded to the caller as-is. |
 
-Progress events may carry any additional fields alongside `type`. Keep them light — pass references or short status strings, not large payloads.
+### Progress events
+
+```json
+{"type": "progress", "sub_type": "processing", "message": "Step 2 of 5", "data": {"step": 2, "total": 5}}
+```
+
+The `sub_type` field (string, required) identifies the kind of progress update. The `message` (string) and `data` (object) fields are optional. Keep them light — pass short status strings and small scalar values, not large payloads.
 
 If the Background Task receives a line that is not valid JSON or not a JSON object, it treats it as a fatal protocol violation: the task is terminated immediately and a failure event is dispatched to the caller.
 
@@ -111,19 +117,21 @@ Terminal events signal the end of the Worker's lifecycle. Once the Background Ta
 
 ```json
 {"type": "done"}
+{"type": "done", "message": "Exported 1 234 rows", "data": {"count": 1234}}
 ```
 
-Signals that the Worker completed successfully. May carry additional fields.
+Signals that the Worker completed successfully. The `message` (string) and `data` (object) fields are optional.
 
 The Background Task dispatches `BackgroundTaskCompletedEvent`.
 
 ### `error` — failure
 
 ```json
-{"type": "error", "message": "Something went wrong"}
+{"type": "error"}
+{"type": "error", "message": "Connection refused", "data": {"host": "db.example.com"}}
 ```
 
-Signals that the Worker encountered a fatal error and cannot continue. The `message` field is optional. May carry additional fields.
+Signals that the Worker encountered a fatal error and cannot continue. The `message` (string) and `data` (object) fields are optional.
 
 The Background Task dispatches `BackgroundTaskFailedEvent`.
 

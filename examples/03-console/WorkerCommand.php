@@ -9,15 +9,15 @@ final class WorkerCommand extends AbstractWorkerCommand
     protected function handle(array $payload): void
     {
         usleep(400000);
-        $this->emit(['type' => 'initialized']);
+        $this->progress('initialized');
 
         $steps = 5;
         for ($i = 1; $i <= $steps; ++$i) {
             usleep(500000);
-            $this->emit(['type' => 'processing', 'step' => $i, 'total' => $steps]);
+            $this->progress('processing', data: ['step' => $i, 'total' => $steps]);
         }
 
         usleep(400000);
-        $this->emit(['type' => 'finalized']);
+        $this->progress('finalized');
     }
 }
