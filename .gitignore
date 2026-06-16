@@ -2,3 +2,4 @@
 vendor
 var
 .php-cs-fixer.cache
+docs/superpowers
