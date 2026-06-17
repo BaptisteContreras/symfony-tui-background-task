@@ -28,7 +28,12 @@ final class WorkerTask
             throw new InvalidPayloadException($e);
         }
 
-        return is_array($decoded) ? $decoded : [];
+        if (!is_array($decoded)) {
+            return [];
+        }
+
+        /** @var array<string, mixed> $decoded */
+        return $decoded;
     }
 
     /**

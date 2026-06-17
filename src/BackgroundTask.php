@@ -72,7 +72,7 @@ final class BackgroundTask
 
                     return;
                 }
-                /** @var array<string, mixed> $event */
+                /** @var array{type: string, sub_type?: string, message?: string, data?: array<string, mixed>} $event */
                 if ($this->dispatchProgressOrTerminal($event)) {
                     return;
                 }
