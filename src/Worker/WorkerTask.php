@@ -2,7 +2,7 @@
 
 namespace TuiBackground\Worker;
 
-use TuiBackground\EventType;
+use TuiBackground\Event\EventType;
 use TuiBackground\Exception\InvalidPayloadException;
 
 final class WorkerTask

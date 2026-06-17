@@ -7,8 +7,10 @@ use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 use TuiBackground\Event\BackgroundTaskCompletedEvent;
 use TuiBackground\Event\BackgroundTaskFailedEvent;
 use TuiBackground\Event\BackgroundTaskProgressEvent;
+use TuiBackground\Event\EventType;
 use TuiBackground\Exception\BackgroundTaskAlreadyStartedException;
 use TuiBackground\Exception\InvalidPayloadException;
+use TuiBackground\Exception\LogicException;
 
 final class BackgroundTask
 {
@@ -100,7 +102,10 @@ final class BackgroundTask
 
     private function terminate(object $event): void
     {
-        \assert(null !== $this->timerId, 'terminate() called without an active timer');
+        if (null === $this->timerId) {
+            throw new LogicException('terminate() called without an active timer');
+        }
+
         EventLoop::cancel($this->timerId);
         $this->timerId = null;
         $this->socket?->close();
@@ -109,12 +114,17 @@ final class BackgroundTask
     }
 
     /**
-     * @param array<string, mixed> $event
+     * Dispatches the event to the appropriate listener based on its type.
+     *
+     * Returns true if the event was a terminal one (done or error), meaning
+     * the caller should stop polling. Returns false for progress events.
+     *
+     * @param array{type: string, sub_type?: string, message?: string, data?: array<string, mixed>} $event
      */
     private function dispatchProgressOrTerminal(array $event): bool
     {
-        $typeValue = $event['type'] ?? null;
-        $type = is_string($typeValue) ? EventType::tryFrom($typeValue) : null;
+        $typeValue = $event['type'];
+        $type = EventType::from($typeValue);
 
         if (EventType::Done === $type) {
             $this->terminate(new BackgroundTaskCompletedEvent());

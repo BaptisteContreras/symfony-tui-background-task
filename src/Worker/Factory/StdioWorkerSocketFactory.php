@@ -1,6 +1,8 @@
 <?php
 
-namespace TuiBackground\Worker;
+namespace TuiBackground\Worker\Factory;
+
+use TuiBackground\Worker\WorkerSocket;
 
 final class StdioWorkerSocketFactory implements WorkerSocketFactoryInterface
 {

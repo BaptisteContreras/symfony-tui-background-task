@@ -1,10 +1,10 @@
 <?php
 
 use Symfony\Component\Console\Attribute\AsCommand;
-use TuiBackground\Worker\AbstractWorkerCommand;
+use TuiBackground\Worker\Command\WorkerCommand;
 
 #[AsCommand('worker')]
-final class WorkerCommand extends AbstractWorkerCommand
+final class WorkerCommandDemo extends WorkerCommand
 {
     protected function handle(array $payload): void
     {

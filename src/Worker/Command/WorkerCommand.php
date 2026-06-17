@@ -1,19 +1,21 @@
 <?php
 
-namespace TuiBackground\Worker;
+namespace TuiBackground\Worker\Command;
 
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use TuiBackground\EventType;
+use TuiBackground\Event\EventType;
 use TuiBackground\Exception\LogicException;
+use TuiBackground\Worker\Factory\WorkerTaskFactoryInterface;
+use TuiBackground\Worker\WorkerTask;
 
-abstract class AbstractWorkerCommand extends Command
+abstract class WorkerCommand extends Command
 {
     private bool $terminated = false;
     private ?WorkerTask $task = null;
 
-    public function __construct(private readonly WorkerSocketFactoryInterface $socketFactory)
+    public function __construct(private readonly WorkerTaskFactoryInterface $taskFactory)
     {
         parent::__construct();
     }
@@ -25,7 +27,7 @@ abstract class AbstractWorkerCommand extends Command
 
     final protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $task = new WorkerTask($this->socketFactory->create());
+        $task = $this->taskFactory->create();
         $this->task = $task;
 
         $payload = $task->readPayload();
@@ -41,7 +43,6 @@ abstract class AbstractWorkerCommand extends Command
         }
 
         $this->task = null;
-        $this->terminated = false;
 
         return Command::SUCCESS;
     }

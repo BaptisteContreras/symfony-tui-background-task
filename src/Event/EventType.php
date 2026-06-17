@@ -1,6 +1,6 @@
 <?php
 
-namespace TuiBackground;
+namespace TuiBackground\Event;
 
 enum EventType: string
 {
